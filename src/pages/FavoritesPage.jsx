@@ -13,7 +13,7 @@ export default function FavoritesPage({
       <div>
         <h2 className="text-2xl font-semibold">Your favorite cities</h2>
         <p className="mt-1 text-sm text-white/65">
-          Saved in this session for now. MongoDB sync can come later.
+          Synced with MongoDB — favorites stay after refresh.
         </p>
       </div>
 

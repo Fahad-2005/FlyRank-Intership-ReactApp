@@ -20,8 +20,8 @@ const IDEA_CARDS = [
     body: 'Quick reopen of the last cities you looked up.',
   },
   {
-    title: 'Mongo sync',
-    body: 'Persist favorites & history across devices later.',
+    title: 'User accounts',
+    body: 'Favorites already sync with MongoDB. Next: login & per-user history.',
   },
 ]
 
@@ -31,10 +31,9 @@ export default function DiscoverPage({ loading, onOpenCity }) {
   return (
     <section className="space-y-4 rounded-[28px] border border-white/20 bg-black/35 p-5 shadow-2xl backdrop-blur-2xl">
       <div>
-        <h2 className="text-2xl font-semibold">What we can add next</h2>
+        <h2 className="text-2xl font-semibold">These are coming soon</h2>
         <p className="mt-1 text-sm text-white/65">
-          Ideas for more screens before MongoDB. Pick any later and we’ll build
-          it.
+           These are ideas for later features.
         </p>
       </div>
 

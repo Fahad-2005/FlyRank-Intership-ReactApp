@@ -1,4 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  createFavorite,
+  deleteFavorite,
+  getFavorites,
+  mapFavorite,
+} from './api/favorites'
 import DiscoverPage from './pages/DiscoverPage'
 import FavoritesPage from './pages/FavoritesPage'
 import HomePage from './pages/HomePage'
@@ -21,6 +27,38 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [favorites, setFavorites] = useState([])
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
+  const [favoritesError, setFavoritesError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadFavorites() {
+      setFavoritesLoading(true)
+      setFavoritesError('')
+      try {
+        const docs = await getFavorites()
+        if (!cancelled) {
+          setFavorites(docs.map(mapFavorite))
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFavoritesError(
+            err instanceof Error
+              ? err.message
+              : 'Could not load favorites. Is the API running?',
+          )
+        }
+      } finally {
+        if (!cancelled) setFavoritesLoading(false)
+      }
+    }
+
+    loadFavorites()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function loadCity(cityName, { switchToWeather = true } = {}) {
     const city = cityName.trim()
@@ -52,42 +90,56 @@ function App() {
 
   function isFavorite(city, country) {
     return favorites.some(
-      (item) => item.city === city && item.country === country,
+      (item) => item.city === city && item.country === (country || ''),
     )
   }
 
-  function toggleFavorite() {
+  async function toggleFavorite() {
     if (!weather) return
 
-    const exists = isFavorite(weather.city, weather.country)
-    if (exists) {
-      setFavorites((prev) =>
-        prev.filter(
-          (item) =>
-            !(item.city === weather.city && item.country === weather.country),
-        ),
-      )
-      return
-    }
+    const existing = favorites.find(
+      (item) =>
+        item.city === weather.city && item.country === (weather.country || ''),
+    )
 
-    setFavorites((prev) => [
-      {
-        id: `${weather.city}-${weather.country}-${Date.now()}`,
+    setFavoritesError('')
+
+    try {
+      if (existing) {
+        await deleteFavorite(existing.id)
+        setFavorites((prev) => prev.filter((item) => item.id !== existing.id))
+        return
+      }
+
+      const created = await createFavorite({
         city: weather.city,
-        country: weather.country,
+        country: weather.country || '',
         temperature: weather.temperature,
         condition: weather.condition,
         weatherCode: weather.weatherCode,
         humidity: weather.humidity,
         windSpeed: weather.windSpeed,
         rainProbability: weather.rainProbability,
-      },
-      ...prev,
-    ])
+      })
+
+      setFavorites((prev) => [mapFavorite(created), ...prev])
+    } catch (err) {
+      setFavoritesError(
+        err instanceof Error ? err.message : 'Failed to update favorite',
+      )
+    }
   }
 
-  function removeFavorite(id) {
-    setFavorites((prev) => prev.filter((item) => item.id !== id))
+  async function removeFavorite(id) {
+    setFavoritesError('')
+    try {
+      await deleteFavorite(id)
+      setFavorites((prev) => prev.filter((item) => item.id !== id))
+    } catch (err) {
+      setFavoritesError(
+        err instanceof Error ? err.message : 'Failed to remove favorite',
+      )
+    }
   }
 
   const favorited = weather
@@ -136,6 +188,12 @@ function App() {
           </div>
         </nav>
 
+        {favoritesError ? (
+          <p className="rounded-2xl border border-amber-300/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
+            {favoritesError}
+          </p>
+        ) : null}
+
         {screen === 'weather' ? (
           <HomePage
             query={query}
@@ -152,7 +210,7 @@ function App() {
         {screen === 'favorites' ? (
           <FavoritesPage
             favorites={favorites}
-            loading={loading}
+            loading={loading || favoritesLoading}
             onOpenCity={loadCity}
             onRemoveFavorite={removeFavorite}
             onGoHome={() => setScreen('weather')}
