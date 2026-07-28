@@ -8,9 +8,9 @@ Live weather data comes from **Open-Meteo** (no API key required). Favorites are
 
 ## Features
 
-- **Weather** — city search, 7-day cards, hourly Overview chart (temp, precipitation, wind, humidity, cloud cover)
+- **Weather** — city search, 7-day forecast, hourly Overview chart (temp, precipitation, wind, humidity, cloud cover)
 - **Favorites** — save / remove cities; synced with MongoDB so they survive refresh
-- **Discover** — quick city chips + roadmap of upcoming features
+- **Discover** — profile, unit settings, recent searches, compare cities, weather alerts, quick city chips
 - Weather-matched Unsplash backgrounds and glassmorphism UI
 
 ---
@@ -100,7 +100,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 2. Explore day cards, Chart / List view, and metric tabs
 3. Click **Save favorite** to store the city in MongoDB
 4. Open the **Favorites** tab to reopen or remove saved cities
-5. Use **Discover** for quick cities and upcoming ideas
+5. Use **Discover** for settings, compare, alerts, and recent searches
 
 ---
 
@@ -108,20 +108,31 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 
 ```text
 src/
-  App.jsx                 # Shell, nav, favorites state
-  api/favorites.js        # Frontend calls to /api/favorites
+  App.jsx                      # Shell, nav, shared state
+  api/favorites.js             # Frontend calls to /api/favorites
+  context/SettingsContext.jsx  # Units + profile preferences
   pages/
-    HomePage.jsx          # Weather / search / chart
-    FavoritesPage.jsx     # Saved cities
-    DiscoverPage.jsx      # Roadmap + quick cities
+    HomePage.jsx               # Weather / search / chart / 7-day
+    FavoritesPage.jsx          # Saved cities
+    DiscoverPage.jsx           # Discover tools hub
   components/
     HourlyChart.jsx
+    SevenDayForecast.jsx
+    CompareCitiesPanel.jsx
+    WeatherAlertsPanel.jsx
+    UnitSettingsPanel.jsx
+    RecentSearchesPanel.jsx
+    UserProfilePanel.jsx
     WeatherIcon.jsx
-  utils/weather.js        # Open-Meteo helpers
+  utils/
+    weather.js                 # Open-Meteo helpers
+    units.js                   # °C/°F, km/h/mph
+    alerts.js                  # Storm / rain alerts
+    recentSearches.js          # localStorage recent cities
 server/
-  index.js                # Express API
-  models/Favorite.js      # Mongoose schema
-  .env.example            # Env template (no secrets)
+  index.js                     # Express API
+  models/Favorite.js           # Mongoose schema
+  .env.example                 # Env template (no secrets)
 ```
 
 Vite proxies `/api` → `http://127.0.0.1:5000` during development.
