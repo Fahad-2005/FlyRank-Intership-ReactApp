@@ -113,8 +113,17 @@ src/
   context/SettingsContext.jsx  # Units + profile preferences
   pages/
     HomePage.jsx               # Weather / search / chart / 7-day
+    WeatherRoute.jsx           # Route wrapper for /
     FavoritesPage.jsx          # Saved cities
+    FavoritesRoute.jsx
     DiscoverPage.jsx           # Discover tools hub
+    DiscoverRoute.jsx
+    HealthPage.jsx             # FE-04 health-check (fetched data)
+  layout/
+    RootLayout.jsx             # Shared nav + page shell
+  context/
+    SettingsContext.jsx
+    WeatherAppContext.jsx      # Shared weather/favorites state
   components/
     HourlyChart.jsx
     SevenDayForecast.jsx
@@ -181,8 +190,79 @@ The **Discover** tab includes:
 
 ---
 
-## Notes
+## Routes (FE-04)
 
-- Never commit `server/.env` — it is gitignored
-- Share only `server/.env.example` with placeholders
-- Weather data does not need an API key (Open-Meteo)
+| Path | Screen |
+| --- | --- |
+| `/` | Weather (search + hourly + 7-day) |
+| `/favorites` | Favorite cities |
+| `/discover` | Profile, units, compare, alerts, recent |
+| `/health` | Health-check page (fetches `/api/health`) |
+
+Responsive layout is checked for ~375px (mobile nav) and ~1280px (desktop).
+
+---
+
+## Deploy (Vercel + API)
+
+### A. Push to GitHub
+
+1. Create a GitHub repo (if you don’t have one)
+2. Commit and push this project (**do not commit** `server/.env`)
+
+```bash
+git add .
+git commit -m "FE-04: routes, health page, design tokens, Vercel config"
+git push -u origin main
+```
+
+### B. Deploy the frontend on Vercel
+
+1. Go to [https://vercel.com](https://vercel.com) → sign in with GitHub
+2. **Add New Project** → import this repo
+3. Framework: **Vite** (auto-detected)
+4. Build command: `npm run build` · Output: `dist`
+5. Deploy
+6. Copy the preview URL (e.g. `https://your-app.vercel.app`)
+
+Every new push creates a new **Preview** deployment.
+
+### C. Deploy the API (Express + Mongo)
+
+Vercel is great for the React app. Host the Express API separately (e.g. **Render** free web service):
+
+1. Create a Web Service from the same repo
+2. Root / start: `node server/index.js` (or set start command)
+3. Add env var: `MONGODB_URI` = your Atlas connection string
+4. Add env var: `PORT` = `10000` (or whatever Render gives you)
+5. Copy the API URL (e.g. `https://your-api.onrender.com`)
+
+### D. Connect frontend → API
+
+In **Vercel → Project → Settings → Environment Variables**:
+
+| Name | Value |
+| --- | --- |
+| `VITE_API_URL` | `https://your-api.onrender.com` (no trailing slash) |
+
+Redeploy the frontend after adding the variable.
+
+Then open `https://your-app.vercel.app/health` — it should show fetched JSON from the API.
+
+### E. Submit FE-04
+
+- Live preview URL
+- Repo link
+
+---
+
+## Env var structure (no secrets in repo)
+
+| File | Purpose |
+| --- | --- |
+| `server/.env` | Local Mongo URI only (gitignored) |
+| `server/.env.example` | Template without secrets |
+| `.env.example` | Documents `VITE_API_URL` |
+| Vercel / Render dashboard | Real production secrets |
+
+Never commit real passwords or connection strings.

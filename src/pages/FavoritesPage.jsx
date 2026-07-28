@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { WeatherIcon } from '../components/WeatherIcon'
 import { useSettings } from '../context/SettingsContext'
 import { formatTemp } from '../utils/units'
@@ -8,7 +9,6 @@ export default function FavoritesPage({
   loading,
   onOpenCity,
   onRemoveFavorite,
-  onGoHome,
 }) {
   const { tempUnit } = useSettings()
 
@@ -27,13 +27,12 @@ export default function FavoritesPage({
           <p className="mt-1 text-sm text-white/55">
             Open Weather, search a city, then tap “Save favorite”.
           </p>
-          <button
-            type="button"
-            onClick={onGoHome}
-            className="mt-4 rounded-full bg-[#f0c35a] px-4 py-2 text-sm font-semibold text-[#1a1a1a]"
+          <Link
+            to="/"
+            className="mt-4 inline-block rounded-full bg-[#f0c35a] px-4 py-2 text-sm font-semibold text-[#1a1a1a]"
           >
             Go to Weather
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

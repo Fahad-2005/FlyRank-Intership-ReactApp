@@ -1,7 +1,7 @@
-const API_BASE = '/api'
+import { apiUrl } from './config'
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(apiUrl(`/api${path}`), {
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
@@ -33,6 +33,10 @@ export function deleteFavorite(id) {
   return request(`/favorites/${id}`, {
     method: 'DELETE',
   })
+}
+
+export function getHealth() {
+  return request('/health')
 }
 
 export function mapFavorite(doc) {
