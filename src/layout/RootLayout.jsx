@@ -17,7 +17,7 @@ const TITLES = {
 }
 
 function navClass({ isActive }) {
-  return `rounded-full px-3.5 py-1.5 text-sm transition ${
+  return `rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition ${
     isActive
       ? 'bg-[var(--color-accent)] font-semibold text-[var(--color-accent-ink)]'
       : 'text-white/75 hover:bg-white/10'
@@ -25,7 +25,7 @@ function navClass({ isActive }) {
 }
 
 function mobileNavClass({ isActive }) {
-  return `text-sm ${
+  return `px-1 text-xs sm:text-sm ${
     isActive
       ? 'font-semibold text-[var(--color-accent)]'
       : 'text-white/70'
@@ -40,22 +40,26 @@ export default function RootLayout() {
 
   return (
     <main
-      className="relative min-h-screen overflow-x-hidden bg-[var(--color-bg)] bg-cover bg-center bg-no-repeat text-[var(--color-text)] transition-[background-image] duration-700"
+      className="relative min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[var(--color-bg)] bg-cover bg-center bg-no-repeat text-[var(--color-text)] transition-[background-image] duration-700"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
       <div className="absolute inset-0 bg-slate-950/50" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[var(--container-max)] flex-col gap-5 px-[var(--page-pad)] py-6 pb-28 sm:px-6 lg:py-8">
-        <nav className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs tracking-[0.2em] text-white/50 uppercase">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full min-w-0 max-w-[var(--container-max)] flex-col gap-4 px-[var(--page-pad)] py-5 pb-24 sm:gap-5 sm:px-6 sm:py-6 lg:py-8">
+        <nav className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[10px] tracking-[0.18em] text-white/50 uppercase sm:text-xs sm:tracking-[0.2em]">
               Weather Discovery
               {displayName ? ` · ${displayName}` : ''}
             </p>
-            <h1 className="text-xl font-semibold sm:text-2xl">{title}</h1>
+            <h1 className="text-lg font-semibold sm:text-xl lg:text-2xl">
+              {title}
+            </h1>
           </div>
-          <div className="flex flex-wrap rounded-full border border-[var(--color-border)] bg-black/25 p-1 backdrop-blur-xl">
+
+          {/* Desktop / tablet nav — hidden on small phones (bottom bar used instead) */}
+          <div className="hidden max-w-full flex-wrap justify-end rounded-full border border-[var(--color-border)] bg-black/25 p-1 backdrop-blur-xl sm:flex">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
@@ -70,16 +74,18 @@ export default function RootLayout() {
         </nav>
 
         {favoritesError ? (
-          <p className="rounded-2xl border border-amber-300/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
+          <p className="rounded-2xl border border-amber-300/30 bg-amber-500/15 px-3 py-3 text-sm text-amber-100 sm:px-4">
             {favoritesError}
           </p>
         ) : null}
 
-        <Outlet />
+        <div className="min-w-0 w-full">
+          <Outlet />
+        </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[var(--color-surface-strong)] px-4 py-3 backdrop-blur-xl sm:hidden">
-        <div className="mx-auto flex max-w-[var(--container-max)] justify-around">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[var(--color-surface-strong)] px-2 py-3 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto flex max-w-[var(--container-max)] justify-around gap-1">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}

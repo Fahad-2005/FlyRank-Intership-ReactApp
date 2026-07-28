@@ -9,8 +9,8 @@ export default function SevenDayForecast({ weather }) {
   if (!weather?.days?.length) return null
 
   return (
-    <section className="rounded-[24px] border border-white/15 bg-black/30 p-4 backdrop-blur-xl sm:p-5">
-      <h3 className="text-xl font-semibold">7-day forecast</h3>
+    <section className="min-w-0 rounded-[20px] border border-white/15 bg-black/30 p-3 backdrop-blur-xl sm:rounded-[24px] sm:p-5">
+      <h3 className="text-lg font-semibold sm:text-xl">7-day forecast</h3>
       <p className="mt-1 text-sm text-white/60">
         Daily highs, lows, sunrise, sunset, and wind for {weather.city}.
       </p>
@@ -19,27 +19,29 @@ export default function SevenDayForecast({ weather }) {
         {weather.days.map((day, index) => (
           <article
             key={day.dateKey}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+            className="flex min-w-0 flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:px-4"
           >
-            <div className="min-w-[7rem]">
-              <p className="font-medium">
-                {formatDayLabel(day.date, index, weather.todayIndex)}
-              </p>
-              <p className="text-xs text-white/55">
-                {getWeatherDescription(day.weatherCode)}
-              </p>
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">
+                  {formatDayLabel(day.date, index, weather.todayIndex)}
+                </p>
+                <p className="truncate text-xs text-white/55">
+                  {getWeatherDescription(day.weatherCode)}
+                </p>
+              </div>
+              <WeatherIcon code={day.weatherCode} className="h-8 w-8 shrink-0" />
+              <div className="shrink-0 text-sm">
+                <span className="font-semibold">
+                  {formatTemp(day.high, tempUnit)}
+                </span>
+                <span className="text-white/50"> / </span>
+                <span className="text-white/75">
+                  {formatTemp(day.low, tempUnit)}
+                </span>
+              </div>
             </div>
-            <WeatherIcon code={day.weatherCode} className="h-8 w-8" />
-            <div className="text-sm">
-              <span className="font-semibold">
-                {formatTemp(day.high, tempUnit)}
-              </span>
-              <span className="text-white/50"> / </span>
-              <span className="text-white/75">
-                {formatTemp(day.low, tempUnit)}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-3 text-xs text-white/60 sm:ml-auto">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-white/60 sm:ml-auto">
               {day.sunrise ? (
                 <span>↑ {formatClock(day.sunrise)}</span>
               ) : null}

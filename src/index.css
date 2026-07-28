@@ -36,6 +36,9 @@ html,
 body,
 #root {
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -43,6 +46,7 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
   color: var(--color-text);
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Responsive page padding helpers for 375px / 1280px checks */

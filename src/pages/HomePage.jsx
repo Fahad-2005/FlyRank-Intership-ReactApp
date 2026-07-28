@@ -95,7 +95,7 @@ export default function HomePage({
     <>
       <form
         onSubmit={onSearch}
-        className="flex gap-2 rounded-2xl border border-white/25 bg-white/10 p-2 shadow-xl backdrop-blur-xl"
+        className="flex min-w-0 gap-2 rounded-2xl border border-white/25 bg-white/10 p-2 shadow-xl backdrop-blur-xl"
       >
         <label htmlFor="city-search" className="sr-only">
           City search
@@ -105,15 +105,15 @@ export default function HomePage({
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search city (e.g. London)"
-          className="flex-1 rounded-xl border-0 bg-transparent px-4 py-2.5 text-white placeholder:text-white/55 outline-none"
+          placeholder="Search city"
+          className="min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3 py-2.5 text-white placeholder:text-white/55 outline-none sm:px-4"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-white/90 px-4 py-2.5 font-medium text-slate-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="shrink-0 rounded-xl bg-white/90 px-3 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-base"
         >
-          {loading ? 'Searching…' : 'Search'}
+          {loading ? '…' : 'Search'}
         </button>
       </form>
 
@@ -131,55 +131,58 @@ export default function HomePage({
           </p>
         </section>
       ) : (
-        <section className="space-y-4 rounded-[28px] border border-white/20 bg-black/35 p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <div>
-                <p className="text-sm text-white/55">
+        <section className="min-w-0 space-y-4 overflow-hidden rounded-[24px] border border-white/20 bg-black/35 p-3 shadow-2xl backdrop-blur-2xl sm:rounded-[28px] sm:p-5">
+          <div className="flex min-w-0 flex-col gap-3">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm text-white/55">
                   {weather.city}
                   {weather.country ? `, ${weather.country}` : ''}
                 </p>
-                <h2 className="text-3xl font-semibold tracking-tight">Hourly</h2>
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                  Hourly
+                </h2>
               </div>
               <button
                 type="button"
                 onClick={onToggleFavorite}
-                className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm transition ${
                   favorited
                     ? 'border-[#f0c35a]/60 bg-[#f0c35a]/20 text-[#f0c35a]'
                     : 'border-white/20 bg-white/5 text-white/85 hover:bg-white/10'
                 }`}
               >
-                {favorited ? '★ Saved' : '☆ Save favorite'}
+                {favorited ? '★ Saved' : '☆ Save'}
               </button>
-              <div className="flex flex-wrap gap-2">
-                {METRIC_TABS.map((tab) => {
-                  const active = activeMetric === tab
-                  return (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveMetric(tab)}
-                      className={`rounded-full px-3.5 py-1.5 text-sm transition ${
-                        active
-                          ? 'bg-[#f0c35a] font-semibold text-[#1a1a1a]'
-                          : 'bg-white/5 text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  )
-                })}
-              </div>
             </div>
 
-            <div className="flex overflow-hidden rounded-full border border-white/10 bg-white/5 p-1">
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {METRIC_TABS.map((tab) => {
+                const active = activeMetric === tab
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveMetric(tab)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-xs whitespace-nowrap transition sm:text-sm ${
+                      active
+                        ? 'bg-[#f0c35a] font-semibold text-[#1a1a1a]'
+                        : 'bg-white/5 text-white/80 hover:bg-white/10'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex w-fit overflow-hidden rounded-full border border-white/10 bg-white/5 p-1">
               {['Chart', 'List'].map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setViewMode(mode)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                  className={`rounded-full px-3 py-1.5 text-sm transition sm:px-4 ${
                     viewMode === mode
                       ? 'bg-white/15 text-white'
                       : 'text-white/60 hover:text-white'
@@ -191,7 +194,7 @@ export default function HomePage({
             </div>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
             {weather.days.map((day, index) => {
               const active = index === selectedDayIndex
               const label = formatDayLabel(day.date, index, weather.todayIndex)
@@ -231,7 +234,7 @@ export default function HomePage({
             })}
           </div>
 
-          <div className="rounded-[24px] border border-white/15 bg-black/30 p-4 backdrop-blur-xl sm:p-5">
+          <div className="min-w-0 rounded-[20px] border border-white/15 bg-black/30 p-3 backdrop-blur-xl sm:rounded-[24px] sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="text-xl font-semibold">{activeMetric}</h3>
               {activeMetric === 'Overview' ? (

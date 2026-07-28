@@ -87,10 +87,10 @@ export default function HourlyChart({
   }
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 w-full overflow-x-hidden">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="h-auto w-full select-none"
+        className="h-auto max-w-full w-full select-none"
         role="img"
         aria-label={`${metric} chart`}
       >
@@ -244,12 +244,12 @@ export default function HourlyChart({
 
       {selected ? (
         <div
-          className="pointer-events-none absolute top-8 z-10 -translate-x-1/2 rounded-2xl border border-white/20 bg-black/45 px-3 py-2 shadow-2xl backdrop-blur-xl"
+          className="pointer-events-none absolute top-6 z-10 max-w-[min(90vw,18rem)] -translate-x-1/2 rounded-2xl border border-white/20 bg-black/45 px-2.5 py-1.5 shadow-2xl backdrop-blur-xl sm:top-8 sm:px-3 sm:py-2"
           style={{
-            left: `${(selected.x / width) * 100}%`,
+            left: `${Math.min(Math.max((selected.x / width) * 100, 18), 82)}%`,
           }}
         >
-          <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+          <div className="flex items-center gap-1.5 text-xs whitespace-nowrap sm:gap-2 sm:text-sm">
             <span className="text-white/70">
               {formatHourLabel(selected.hour.date, {
                 isNow: selected.index === nowIndex,
@@ -269,13 +269,13 @@ export default function HourlyChart({
         </div>
       ) : null}
 
-      <div className="mt-2 flex items-end gap-1 overflow-x-auto rounded-2xl bg-[#2f6fbf]/85 px-3 py-2">
+      <div className="mt-2 flex max-w-full items-end gap-1 overflow-x-auto rounded-2xl bg-[#2f6fbf]/85 px-2 py-2 sm:px-3">
         {hours.map((hour, index) => (
           <button
             key={`precip-${hour.time}`}
             type="button"
             onClick={() => onSelect(index)}
-            className="flex min-w-[2.75rem] flex-1 flex-col items-center gap-1 text-[11px] text-white/95"
+            className="flex min-w-[2.4rem] flex-1 flex-col items-center gap-1 text-[10px] text-white/95 sm:min-w-[2.75rem] sm:text-[11px]"
           >
             <DropIcon className="h-3 w-3" />
             <span>{hour.rainProbability ?? 0}%</span>
