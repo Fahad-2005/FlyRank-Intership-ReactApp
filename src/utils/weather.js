@@ -243,6 +243,15 @@ export async function fetchWeather(city) {
       low: Math.round(daily.temperature_2m_min[index]),
       sunrise: daily.sunrise[index] ? new Date(daily.sunrise[index]) : null,
       sunset: daily.sunset[index] ? new Date(daily.sunset[index]) : null,
+      maxWind: dayHours.length
+        ? Math.max(...dayHours.map((hour) => hour.windSpeed ?? 0))
+        : null,
+      avgHumidity: dayHours.length
+        ? Math.round(
+            dayHours.reduce((sum, hour) => sum + (hour.humidity ?? 0), 0) /
+              dayHours.length,
+          )
+        : null,
       hours: dayHours,
       previewCodes: [
         ...new Set(dayHours.map((hour) => getWeatherCategory(hour.weatherCode))),

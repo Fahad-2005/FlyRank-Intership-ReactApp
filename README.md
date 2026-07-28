@@ -139,18 +139,24 @@ Vite proxies `/api` → `http://127.0.0.1:5000` during development.
 
 ---
 
-## Coming soon
+## Discover features
 
-These ideas are listed on the **Discover** screen and planned for later:
+The **Discover** tab includes:
 
-- **Compare cities** — side-by-side temps and rain chance for 2–3 favorites
-- **7-day details** — full daily page with sunrise, sunset, and wind summary
-- **Alerts** — highlight storm / heavy rain hours for saved cities
-- **Unit settings** — toggle °C/°F and km/h vs mph
-- **Recent searches** — quick reopen of the last cities you looked up
-- **User accounts** — login and per-user favorites / history
+- **Profile** — set a display name (saved on device)
+- **Unit settings** — °C/°F and km/h/mph across the app
+- **Recent searches** — quick reopen of last cities searched
+- **Compare cities** — side-by-side live stats for 2–3 favorites
+- **Weather alerts** — storm / heavy-rain warnings for saved cities (next 24h)
+- **7-day forecast** — full daily breakdown on the Weather tab (sunrise, sunset, wind)
 
 ---
+
+## Future ideas
+
+- Full user login with per-account MongoDB data
+- Push notifications for severe weather
+- Compare more than 3 cities at once
 
 ## Scripts
 

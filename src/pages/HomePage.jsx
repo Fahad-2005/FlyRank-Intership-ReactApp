@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import HourlyChart from '../components/HourlyChart'
+import SevenDayForecast from '../components/SevenDayForecast'
 import { DropIcon, WeatherIcon } from '../components/WeatherIcon'
+import { useSettings } from '../context/SettingsContext'
+import {
+  formatTempValue,
+  speedUnitLabel,
+  tempUnitSymbol,
+} from '../utils/units'
 import {
   formatDayLabel,
   formatHourLabel,
   getClosestHourIndex,
-  getMetricUnit,
   getMetricValue,
   getWeatherDescription,
   METRIC_TABS,
@@ -21,6 +27,7 @@ export default function HomePage({
   favorited,
   onToggleFavorite,
 }) {
+  const { tempUnit, speedUnit } = useSettings()
   const [selectedDayIndex, setSelectedDayIndex] = useState(
     weather?.todayIndex ?? 0,
   )
@@ -67,6 +74,22 @@ export default function HomePage({
     Math.max(chartHours.length - 1, 0),
   )
   const nowHourIndex = getClosestHourIndex(chartHours)
+
+  function formatMetricDisplay(hour, metric) {
+    const value = getMetricValue(hour, metric, useFeelsLike)
+    if (metric === 'Overview') {
+      return `${formatTempValue(value, tempUnit)}${tempUnitSymbol(tempUnit)}`
+    }
+    if (metric === 'Wind') {
+      const display =
+        speedUnit === 'mph' ? Math.round(value * 0.621371) : Math.round(value)
+      return `${display} ${speedUnitLabel(speedUnit)}`
+    }
+    if (metric === 'Precipitation' || metric === 'Humidity' || metric === 'Cloud cover') {
+      return `${Math.round(value)}%`
+    }
+    return String(value)
+  }
 
   return (
     <>
@@ -200,7 +223,8 @@ export default function HomePage({
                     ))}
                   </div>
                   <p className="mt-2 text-sm font-medium">
-                    {day.high}°/{day.low}°
+                    {formatTempValue(day.high, tempUnit)}°/
+                    {formatTempValue(day.low, tempUnit)}°
                   </p>
                 </button>
               )
@@ -266,10 +290,7 @@ export default function HomePage({
                     </span>
                     <WeatherIcon code={hour.weatherCode} className="h-7 w-7" />
                     <span className="font-medium">
-                      {Math.round(
-                        getMetricValue(hour, activeMetric, useFeelsLike),
-                      )}
-                      {getMetricUnit(activeMetric)}
+                      {formatMetricDisplay(hour, activeMetric)}
                     </span>
                     <span className="flex items-center gap-1 text-[#7EB6FF]">
                       <DropIcon />
@@ -293,6 +314,8 @@ export default function HomePage({
               </div>
             </div>
           </div>
+
+          <SevenDayForecast weather={weather} />
         </section>
       )}
     </>

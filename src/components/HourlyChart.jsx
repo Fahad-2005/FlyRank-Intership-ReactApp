@@ -1,10 +1,15 @@
+import { useSettings } from '../context/SettingsContext'
+import {
+  formatTempValue,
+  speedUnitLabel,
+  tempUnitSymbol,
+} from '../utils/units'
 import { DropIcon, WeatherIcon } from './WeatherIcon'
 import {
   buildSmoothPath,
   formatClock,
   formatHourLabel,
   getClosestHourIndex,
-  getMetricUnit,
   getMetricValue,
 } from '../utils/weather'
 
@@ -17,6 +22,7 @@ export default function HourlyChart({
   sunrise,
   sunset,
 }) {
+  const { tempUnit, speedUnit } = useSettings()
   const width = 920
   const height = 280
   const pad = { top: 28, right: 24, bottom: 36, left: 44 }
@@ -61,6 +67,25 @@ export default function HourlyChart({
   const sunsetMarker = eventMarker(sunset, 'Sunset')
   const sunriseMarker = eventMarker(sunrise, 'Sunrise')
 
+  function formatChartValue(value) {
+    if (metric === 'Overview') {
+      return `${formatTempValue(value, tempUnit)}${tempUnitSymbol(tempUnit)}`
+    }
+    if (metric === 'Wind') {
+      const display =
+        speedUnit === 'mph' ? Math.round(value * 0.621371) : Math.round(value)
+      return `${display} ${speedUnitLabel(speedUnit)}`
+    }
+    if (
+      metric === 'Precipitation' ||
+      metric === 'Humidity' ||
+      metric === 'Cloud cover'
+    ) {
+      return `${Math.round(value)}%`
+    }
+    return String(Math.round(value))
+  }
+
   return (
     <div className="relative">
       <svg
@@ -99,7 +124,7 @@ export default function HourlyChart({
                 fontSize="11"
               >
                 {tick}
-                {metric === 'Overview' ? '°' : ''}
+                {metric === 'Overview' ? tempUnitSymbol(tempUnit) : ''}
               </text>
             </g>
           )
@@ -232,8 +257,9 @@ export default function HourlyChart({
             </span>
             <WeatherIcon code={selected.hour.weatherCode} className="h-5 w-5" />
             <span className="font-semibold">
-              {Math.round(getMetricValue(selected.hour, metric, useFeelsLike))}
-              {getMetricUnit(metric).trim()}
+              {formatChartValue(
+                getMetricValue(selected.hour, metric, useFeelsLike),
+              )}
             </span>
             <span className="flex items-center gap-1 text-[#7EB6FF]">
               <DropIcon />

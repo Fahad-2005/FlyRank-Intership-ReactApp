@@ -1,55 +1,47 @@
-const IDEA_CARDS = [
-  {
-    title: 'Compare cities',
-    body: 'Side-by-side temps and rain chance for 2–3 favorites.',
-  },
-  {
-    title: '7-day details',
-    body: 'Full daily page with sunrise, sunset, and wind summary.',
-  },
-  {
-    title: 'Alerts',
-    body: 'Highlight storm / heavy rain hours for saved cities.',
-  },
-  {
-    title: 'Unit settings',
-    body: 'Toggle °C/°F and km/h vs mph in one place.',
-  },
-  {
-    title: 'Recent searches',
-    body: 'Quick reopen of the last cities you looked up.',
-  },
-  {
-    title: 'User accounts',
-    body: 'Favorites already sync with MongoDB. Next: login & per-user history.',
-  },
-]
+import CompareCitiesPanel from '../components/CompareCitiesPanel'
+import RecentSearchesPanel from '../components/RecentSearchesPanel'
+import UnitSettingsPanel from '../components/UnitSettingsPanel'
+import UserProfilePanel from '../components/UserProfilePanel'
+import WeatherAlertsPanel from '../components/WeatherAlertsPanel'
 
 const QUICK_CITIES = ['Lahore', 'London', 'Tokyo', 'Dubai', 'New York']
 
-export default function DiscoverPage({ loading, onOpenCity }) {
+export default function DiscoverPage({
+  loading,
+  favorites,
+  recentSearches,
+  onOpenCity,
+  onClearRecent,
+}) {
   return (
-    <section className="space-y-4 rounded-[28px] border border-white/20 bg-black/35 p-5 shadow-2xl backdrop-blur-2xl">
-      <div>
-        <h2 className="text-2xl font-semibold">These are coming soon</h2>
+    <div className="space-y-4">
+      <section className="rounded-[28px] border border-white/20 bg-black/35 p-5 shadow-2xl backdrop-blur-2xl">
+        <h2 className="text-2xl font-semibold">Discover</h2>
         <p className="mt-1 text-sm text-white/65">
-           These are ideas for later features.
+          Tools and settings to get more from your weather dashboard.
         </p>
-      </div>
+      </section>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {IDEA_CARDS.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md"
-          >
-            <h3 className="font-semibold">{card.title}</h3>
-            <p className="mt-1 text-sm text-white/65">{card.body}</p>
-          </div>
-        ))}
-      </div>
+      <UserProfilePanel />
+      <UnitSettingsPanel />
+      <RecentSearchesPanel
+        recentSearches={recentSearches}
+        loading={loading}
+        onOpenCity={onOpenCity}
+        onClear={onClearRecent}
+      />
+      <CompareCitiesPanel favorites={favorites} />
+      <WeatherAlertsPanel favorites={favorites} />
 
-      <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
+      <section className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+        <h3 className="font-semibold">7-day forecast</h3>
+        <p className="mt-1 text-sm text-white/65">
+          Search any city on the Weather tab — the full 7-day breakdown with
+          sunrise, sunset, and wind appears below the hourly chart.
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-white/15 bg-white/5 p-4">
         <p className="text-sm text-white/70">Try a popular city quickly:</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {QUICK_CITIES.map((city) => (
@@ -64,7 +56,7 @@ export default function DiscoverPage({ loading, onOpenCity }) {
             </button>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   )
 }

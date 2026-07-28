@@ -5,9 +5,15 @@ import {
   getFavorites,
   mapFavorite,
 } from './api/favorites'
+import { useSettings } from './context/SettingsContext'
 import DiscoverPage from './pages/DiscoverPage'
 import FavoritesPage from './pages/FavoritesPage'
 import HomePage from './pages/HomePage'
+import {
+  clearRecentSearches,
+  loadRecentSearches,
+  saveRecentSearch,
+} from './utils/recentSearches'
 import {
   fetchWeather,
   getWeatherBackground,
@@ -21,6 +27,7 @@ const SCREENS = [
 ]
 
 function App() {
+  const { displayName } = useSettings()
   const [screen, setScreen] = useState('weather')
   const [query, setQuery] = useState('')
   const [weather, setWeather] = useState(null)
@@ -29,6 +36,7 @@ function App() {
   const [favorites, setFavorites] = useState([])
   const [favoritesLoading, setFavoritesLoading] = useState(true)
   const [favoritesError, setFavoritesError] = useState('')
+  const [recentSearches, setRecentSearches] = useState(loadRecentSearches)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +82,7 @@ function App() {
     try {
       const result = await fetchWeather(city)
       setWeather(result)
+      setRecentSearches(saveRecentSearch(result.city, result.country || ''))
       if (switchToWeather) setScreen('weather')
     } catch (err) {
       setWeather(null)
@@ -142,6 +151,10 @@ function App() {
     }
   }
 
+  function handleClearRecent() {
+    setRecentSearches(clearRecentSearches())
+  }
+
   const favorited = weather
     ? isFavorite(weather.city, weather.country)
     : false
@@ -163,6 +176,7 @@ function App() {
           <div>
             <p className="text-xs tracking-[0.2em] text-white/50 uppercase">
               Weather Discovery
+              {displayName ? ` · ${displayName}` : ''}
             </p>
             <h1 className="text-xl font-semibold sm:text-2xl">
               {screen === 'weather' && 'Hourly forecast'}
@@ -218,7 +232,13 @@ function App() {
         ) : null}
 
         {screen === 'discover' ? (
-          <DiscoverPage loading={loading} onOpenCity={loadCity} />
+          <DiscoverPage
+            loading={loading}
+            favorites={favorites}
+            recentSearches={recentSearches}
+            onOpenCity={loadCity}
+            onClearRecent={handleClearRecent}
+          />
         ) : null}
       </div>
 

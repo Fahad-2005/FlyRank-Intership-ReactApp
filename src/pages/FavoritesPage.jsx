@@ -1,4 +1,6 @@
 import { WeatherIcon } from '../components/WeatherIcon'
+import { useSettings } from '../context/SettingsContext'
+import { formatTemp } from '../utils/units'
 import { getWeatherBackground } from '../utils/weather'
 
 export default function FavoritesPage({
@@ -8,6 +10,8 @@ export default function FavoritesPage({
   onRemoveFavorite,
   onGoHome,
 }) {
+  const { tempUnit } = useSettings()
+
   return (
     <section className="space-y-4 rounded-[28px] border border-white/20 bg-black/35 p-5 shadow-2xl backdrop-blur-2xl">
       <div>
@@ -56,7 +60,9 @@ export default function FavoritesPage({
               <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
                 <div>
                   <dt className="text-white/55">Temp</dt>
-                  <dd className="font-medium">{item.temperature}°C</dd>
+                  <dd className="font-medium">
+                    {formatTemp(item.temperature, tempUnit)}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-white/55">Humidity</dt>
