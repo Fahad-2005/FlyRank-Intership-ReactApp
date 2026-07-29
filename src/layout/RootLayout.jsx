@@ -3,10 +3,66 @@ import { useSettings } from '../context/SettingsContext'
 import { useWeatherApp } from '../context/WeatherAppContext'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Weather', end: true },
-  { to: '/favorites', label: 'Favorites' },
-  { to: '/discover', label: 'Discover' },
-  { to: '/health', label: 'Health' },
+  {
+    to: '/',
+    label: 'Weather',
+    end: true,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    to: '/favorites',
+    label: 'Favorites',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+        <path
+          d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    to: '/discover',
+    label: 'Discover',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="m10 14 1.2-3.8L15 9l-1.2 3.8L10 14Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    to: '/health',
+    label: 'Health',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+        <path
+          d="M4 12h4l2-5 3 10 2-5h5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
 ]
 
 const TITLES = {
@@ -25,10 +81,10 @@ function navClass({ isActive }) {
 }
 
 function mobileNavClass({ isActive }) {
-  return `px-1 text-xs sm:text-sm ${
+  return `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-0.5 text-[10px] ${
     isActive
       ? 'font-semibold text-[var(--color-accent)]'
-      : 'text-white/70'
+      : 'text-white/65'
   }`
 }
 
@@ -58,7 +114,6 @@ export default function RootLayout() {
             </h1>
           </div>
 
-          {/* Desktop / tablet nav — hidden on small phones (bottom bar used instead) */}
           <div className="hidden max-w-full flex-wrap justify-end rounded-full border border-[var(--color-border)] bg-black/25 p-1 backdrop-blur-xl sm:flex">
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -84,8 +139,9 @@ export default function RootLayout() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[var(--color-surface-strong)] px-2 py-3 backdrop-blur-xl sm:hidden">
-        <div className="mx-auto flex max-w-[var(--container-max)] justify-around gap-1">
+      {/* Bottom tab bar is the standard mobile pattern — keep it */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[var(--color-surface-strong)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto flex max-w-[var(--container-max)] justify-around">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -93,7 +149,8 @@ export default function RootLayout() {
               end={item.end}
               className={mobileNavClass}
             >
-              {item.label}
+              {item.icon}
+              <span className="truncate">{item.label}</span>
             </NavLink>
           ))}
         </div>

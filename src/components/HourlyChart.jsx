@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useSettings } from '../context/SettingsContext'
 import {
   formatTempValue,
@@ -13,6 +14,20 @@ import {
   getMetricValue,
 } from '../utils/weather'
 
+function useIsNarrow(breakpoint = 640) {
+  const [isNarrow, setIsNarrow] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`)
+    const update = () => setIsNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [breakpoint])
+
+  return isNarrow
+}
+
 export default function HourlyChart({
   hours,
   metric,
@@ -23,9 +38,15 @@ export default function HourlyChart({
   sunset,
 }) {
   const { tempUnit, speedUnit } = useSettings()
-  const width = 920
-  const height = 280
-  const pad = { top: 28, right: 24, bottom: 36, left: 44 }
+  const isNarrow = useIsNarrow()
+
+  // Narrow viewBox keeps axis labels readable when scaled to ~375px screens
+  const width = isNarrow ? 360 : 920
+  const height = isNarrow ? 230 : 280
+  const pad = isNarrow
+    ? { top: 26, right: 10, bottom: 34, left: 38 }
+    : { top: 28, right: 24, bottom: 36, left: 48 }
+  const axisFont = isNarrow ? 12 : 12
   const chartW = width - pad.left - pad.right
   const chartH = height - pad.top - pad.bottom
 
@@ -51,7 +72,7 @@ export default function HourlyChart({
   const rainStart = hours.findIndex((hour) => (hour.rainProbability ?? 0) >= 40)
 
   const yTicks = [yMin, Math.round((yMin + yMax) / 2), yMax]
-  const labelStep = Math.max(1, Math.floor(hours.length / 8))
+  const labelStep = Math.max(1, Math.floor(hours.length / (isNarrow ? 5 : 8)))
   const nowIndex = getClosestHourIndex(hours)
 
   function eventMarker(date, label) {
@@ -61,7 +82,10 @@ export default function HourlyChart({
     if (date.getTime() < start || date.getTime() > end) return null
     const ratio = (date.getTime() - start) / (end - start || 1)
     const x = pad.left + ratio * chartW
-    return { x, label: `${label} ${formatClock(date)}` }
+    return {
+      x,
+      label: isNarrow ? label : `${label} ${formatClock(date)}`,
+    }
   }
 
   const sunsetMarker = eventMarker(sunset, 'Sunset')
@@ -84,6 +108,18 @@ export default function HourlyChart({
       return `${Math.round(value)}%`
     }
     return String(Math.round(value))
+  }
+
+  function formatYTick(tick) {
+    if (metric === 'Overview') {
+      return `${formatTempValue(tick, tempUnit)}°`
+    }
+    if (metric === 'Wind') {
+      const display =
+        speedUnit === 'mph' ? Math.round(tick * 0.621371) : Math.round(tick)
+      return String(display)
+    }
+    return String(tick)
   }
 
   return (
@@ -117,14 +153,14 @@ export default function HourlyChart({
                 stroke="rgba(255,255,255,0.08)"
               />
               <text
-                x={pad.left - 10}
+                x={pad.left - 8}
                 y={y + 4}
                 textAnchor="end"
-                fill="rgba(255,255,255,0.45)"
-                fontSize="11"
+                fill="rgba(255,255,255,0.7)"
+                fontSize={axisFont}
+                fontWeight="500"
               >
-                {tick}
-                {metric === 'Overview' ? tempUnitSymbol(tempUnit) : ''}
+                {formatYTick(tick)}
               </text>
             </g>
           )
@@ -141,10 +177,11 @@ export default function HourlyChart({
         ) : null}
 
         {rainStart >= 0
-          ? Array.from({ length: 18 }).map((_, i) => {
+          ? Array.from({ length: isNarrow ? 10 : 18 }).map((_, i) => {
               const x =
                 points[rainStart].x +
-                ((points.at(-1).x - points[rainStart].x) * (i + 0.5)) / 18
+                ((points.at(-1).x - points[rainStart].x) * (i + 0.5)) /
+                  (isNarrow ? 10 : 18)
               return (
                 <line
                   key={i}
@@ -170,16 +207,18 @@ export default function HourlyChart({
 
         {[sunsetMarker, sunriseMarker].filter(Boolean).map((marker) => (
           <g key={marker.label}>
-            <circle cx={marker.x} cy={pad.top + chartH * 0.55} r="7" fill="#F0C35A" />
-            <text
-              x={marker.x}
-              y={pad.top + chartH * 0.55 + 22}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.7)"
-              fontSize="10"
-            >
-              {marker.label}
-            </text>
+            <circle cx={marker.x} cy={pad.top + chartH * 0.55} r="6" fill="#F0C35A" />
+            {!isNarrow ? (
+              <text
+                x={marker.x}
+                y={pad.top + chartH * 0.55 + 20}
+                textAnchor="middle"
+                fill="rgba(255,255,255,0.7)"
+                fontSize="10"
+              >
+                {marker.label}
+              </text>
+            ) : null}
           </g>
         ))}
 
@@ -223,17 +262,17 @@ export default function HourlyChart({
           const x = points[index].x
           return (
             <g key={`label-${hour.time}`}>
-              <foreignObject x={x - 18} y={2} width="36" height="24">
+              <foreignObject x={x - 14} y={2} width="28" height="22">
                 <div className="flex justify-center">
-                  <WeatherIcon code={hour.weatherCode} className="h-5 w-5" />
+                  <WeatherIcon code={hour.weatherCode} className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
               </foreignObject>
               <text
                 x={x}
                 y={height - 8}
                 textAnchor="middle"
-                fill="rgba(255,255,255,0.55)"
-                fontSize="11"
+                fill="rgba(255,255,255,0.65)"
+                fontSize={isNarrow ? 10 : 11}
               >
                 {formatHourLabel(hour.date, { isNow: index === nowIndex })}
               </text>
