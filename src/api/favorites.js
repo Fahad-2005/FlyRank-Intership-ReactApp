@@ -1,9 +1,11 @@
 import { apiUrl } from './config'
+import { getClientId } from '../utils/clientId'
 
 async function request(path, options = {}) {
   const response = await fetch(apiUrl(`/api${path}`), {
     headers: {
       'Content-Type': 'application/json',
+      'x-client-id': getClientId(),
       ...(options.headers || {}),
     },
     ...options,

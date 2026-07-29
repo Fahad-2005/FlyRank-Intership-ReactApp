@@ -15,13 +15,26 @@ const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 
+function getClientId(req) {
+  const headerId = req.headers['x-client-id']
+  const bodyId = req.body?.clientId
+  const queryId = req.query?.clientId
+  const clientId = String(headerId || bodyId || queryId || '').trim()
+  return clientId || null
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, message: 'Weather API is running' })
 })
 
-app.get('/api/favorites', async (_req, res) => {
+app.get('/api/favorites', async (req, res) => {
   try {
-    const favorites = await Favorite.find().sort({ createdAt: -1 })
+    const clientId = getClientId(req)
+    if (!clientId) {
+      return res.status(400).json({ message: 'Missing x-client-id header' })
+    }
+
+    const favorites = await Favorite.find({ clientId }).sort({ createdAt: -1 })
     res.json(favorites)
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to load favorites' })
@@ -30,6 +43,11 @@ app.get('/api/favorites', async (_req, res) => {
 
 app.post('/api/favorites', async (req, res) => {
   try {
+    const clientId = getClientId(req)
+    if (!clientId) {
+      return res.status(400).json({ message: 'Missing x-client-id header' })
+    }
+
     const {
       city,
       country,
@@ -45,12 +63,17 @@ app.post('/api/favorites', async (req, res) => {
       return res.status(400).json({ message: 'City is required' })
     }
 
-    const existing = await Favorite.findOne({ city, country: country || '' })
+    const existing = await Favorite.findOne({
+      clientId,
+      city,
+      country: country || '',
+    })
     if (existing) {
       return res.status(409).json({ message: 'City already saved', favorite: existing })
     }
 
     const favorite = await Favorite.create({
+      clientId,
       city,
       country: country || '',
       temperature,
@@ -69,7 +92,15 @@ app.post('/api/favorites', async (req, res) => {
 
 app.delete('/api/favorites/:id', async (req, res) => {
   try {
-    const deleted = await Favorite.findByIdAndDelete(req.params.id)
+    const clientId = getClientId(req)
+    if (!clientId) {
+      return res.status(400).json({ message: 'Missing x-client-id header' })
+    }
+
+    const deleted = await Favorite.findOneAndDelete({
+      _id: req.params.id,
+      clientId,
+    })
     if (!deleted) {
       return res.status(404).json({ message: 'Favorite not found' })
     }
@@ -91,7 +122,15 @@ async function start() {
     await mongoose.connect(uri)
     console.log('Connected to MongoDB')
 
-    // 0.0.0.0 is required on Render / cloud hosts
+    // Drop old global unique index from before per-client favorites
+    try {
+      await Favorite.collection.dropIndex('city_1_country_1')
+      console.log('Dropped old city+country unique index')
+    } catch {
+      // Index may already be gone — ignore
+    }
+    await Favorite.syncIndexes()
+
     const host = process.env.HOST || '0.0.0.0'
     app.listen(PORT, host, () => {
       console.log(`API running on http://${host}:${PORT}`)

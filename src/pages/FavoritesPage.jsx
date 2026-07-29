@@ -17,7 +17,7 @@ export default function FavoritesPage({
       <div>
         <h2 className="text-2xl font-semibold">Your favorite cities</h2>
         <p className="mt-1 text-sm text-white/65">
-          Synced with MongoDB — favorites stay after refresh.
+          Favorites stay after refresh.
         </p>
       </div>
 
