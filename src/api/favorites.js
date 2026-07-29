@@ -9,17 +9,30 @@ async function request(path, options = {}) {
     ...options,
   })
 
-  const data = await response.json().catch(() => ({}))
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    throw new Error(
+      'API unavailable. Deploy the backend and set VITE_API_URL on Vercel.',
+    )
+  }
+
+  const data = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw new Error(data.message || 'Request failed')
+    throw new Error(data?.message || 'Request failed')
   }
 
   return data
 }
 
-export function getFavorites() {
-  return request('/favorites')
+export async function getFavorites() {
+  const data = await request('/favorites')
+  if (!Array.isArray(data)) {
+    throw new Error(
+      'API unavailable. Deploy the backend and set VITE_API_URL on Vercel.',
+    )
+  }
+  return data
 }
 
 export function createFavorite(payload) {
@@ -41,7 +54,7 @@ export function getHealth() {
 
 export function mapFavorite(doc) {
   return {
-    id: doc._id,
+    id: doc._id ?? doc.id,
     city: doc.city,
     country: doc.country,
     temperature: doc.temperature,

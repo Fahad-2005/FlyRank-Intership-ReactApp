@@ -7,6 +7,12 @@ import {
   mapFavorite,
 } from '../api/favorites'
 import {
+  addLocalFavorite,
+  loadLocalFavorites,
+  removeLocalFavorite,
+  saveLocalFavorites,
+} from '../utils/localFavorites'
+import {
   clearRecentSearches,
   loadRecentSearches,
   saveRecentSearch,
@@ -28,33 +34,36 @@ export function WeatherAppProvider({ children }) {
   const [favorites, setFavorites] = useState([])
   const [favoritesLoading, setFavoritesLoading] = useState(true)
   const [favoritesError, setFavoritesError] = useState('')
+  const [usingLocalFavorites, setUsingLocalFavorites] = useState(false)
   const [recentSearches, setRecentSearches] = useState(loadRecentSearches)
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadFavorites() {
+    async function loadFavoritesList() {
       setFavoritesLoading(true)
       setFavoritesError('')
       try {
         const docs = await getFavorites()
-        if (!cancelled) {
-          setFavorites(docs.map(mapFavorite))
-        }
+        if (cancelled) return
+        setFavorites(docs.map(mapFavorite))
+        setUsingLocalFavorites(false)
       } catch (err) {
-        if (!cancelled) {
-          setFavoritesError(
-            err instanceof Error
-              ? err.message
-              : 'Could not load favorites. Is the API running?',
-          )
-        }
+        if (cancelled) return
+        const local = loadLocalFavorites()
+        setFavorites(local)
+        setUsingLocalFavorites(true)
+        setFavoritesError(
+          err instanceof Error
+            ? `${err.message} Using device favorites for now.`
+            : 'API offline. Using device favorites for now.',
+        )
       } finally {
         if (!cancelled) setFavoritesLoading(false)
       }
     }
 
-    loadFavorites()
+    loadFavoritesList()
     return () => {
       cancelled = true
     }
@@ -105,28 +114,48 @@ export function WeatherAppProvider({ children }) {
 
     setFavoritesError('')
 
+    const payload = {
+      city: weather.city,
+      country: weather.country || '',
+      temperature: weather.temperature,
+      condition: weather.condition,
+      weatherCode: weather.weatherCode,
+      humidity: weather.humidity,
+      windSpeed: weather.windSpeed,
+      rainProbability: weather.rainProbability,
+    }
+
     try {
+      if (usingLocalFavorites) {
+        if (existing) {
+          setFavorites(removeLocalFavorite(existing.id))
+        } else {
+          setFavorites(addLocalFavorite(payload))
+        }
+        return
+      }
+
       if (existing) {
         await deleteFavorite(existing.id)
         setFavorites((prev) => prev.filter((item) => item.id !== existing.id))
         return
       }
 
-      const created = await createFavorite({
-        city: weather.city,
-        country: weather.country || '',
-        temperature: weather.temperature,
-        condition: weather.condition,
-        weatherCode: weather.weatherCode,
-        humidity: weather.humidity,
-        windSpeed: weather.windSpeed,
-        rainProbability: weather.rainProbability,
-      })
-
+      const created = await createFavorite(payload)
       setFavorites((prev) => [mapFavorite(created), ...prev])
     } catch (err) {
+      // Fall back to local favorites if API fails mid-action
+      if (existing) {
+        const next = favorites.filter((item) => item.id !== existing.id)
+        setFavorites(saveLocalFavorites(next))
+      } else {
+        setFavorites(addLocalFavorite(payload))
+      }
+      setUsingLocalFavorites(true)
       setFavoritesError(
-        err instanceof Error ? err.message : 'Failed to update favorite',
+        err instanceof Error
+          ? `${err.message} Saved on this device instead.`
+          : 'Saved on this device instead.',
       )
     }
   }
@@ -134,11 +163,19 @@ export function WeatherAppProvider({ children }) {
   async function removeFavorite(id) {
     setFavoritesError('')
     try {
+      if (usingLocalFavorites || String(id).startsWith('local-')) {
+        setFavorites(removeLocalFavorite(id))
+        return
+      }
       await deleteFavorite(id)
       setFavorites((prev) => prev.filter((item) => item.id !== id))
     } catch (err) {
+      setFavorites(removeLocalFavorite(id))
+      setUsingLocalFavorites(true)
       setFavoritesError(
-        err instanceof Error ? err.message : 'Failed to remove favorite',
+        err instanceof Error
+          ? `${err.message} Removed from this device.`
+          : 'Removed from this device.',
       )
     }
   }

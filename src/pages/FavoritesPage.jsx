@@ -36,7 +36,7 @@ export default function FavoritesPage({
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {favorites.map((item) => (
+          {(Array.isArray(favorites) ? favorites : []).map((item) => (
             <article
               key={item.id}
               className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md"
