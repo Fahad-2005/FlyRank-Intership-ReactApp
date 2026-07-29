@@ -227,42 +227,55 @@ git push -u origin main
 
 Every new push creates a new **Preview** deployment.
 
-### C. Deploy the API (Express + Mongo)
+### C. Deploy the API on Render (Mongo favorites)
 
-Vercel is great for the React app. Host the Express API separately (e.g. **Render** free web service):
+1. Push the latest code to GitHub (includes `npm start` + Render-ready server)
+2. Go to [https://render.com](https://render.com) → sign in with GitHub
+3. **New → Web Service** → select `FlyRank-Intership-ReactApp`
+4. Settings:
+   - **Runtime:** Node
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+5. **Environment → Add Environment Variable:**
+   - Key: `MONGODB_URI`
+   - Value: your Atlas connection string (same as `server/.env`)
+6. Create Web Service → wait until status is **Live**
+7. Copy the service URL, e.g. `https://weather-discovery-api.onrender.com`
+8. Test in browser: `https://YOUR-API.onrender.com/api/health`  
+   You should see `{ "ok": true, ... }`
 
-1. Create a Web Service from the same repo
-2. Root / start: `node server/index.js` (or set start command)
-3. Add env var: `MONGODB_URI` = your Atlas connection string
-4. Add env var: `PORT` = `10000` (or whatever Render gives you)
-5. Copy the API URL (e.g. `https://your-api.onrender.com`)
+> Free Render services sleep after idle. First request after sleep can take ~30–60s.
 
-### D. Connect frontend → API
+### D. Connect Vercel frontend → Render API
 
-In **Vercel → Project → Settings → Environment Variables**:
+1. Vercel → your **weather-app** project → **Settings → Environment Variables**
+2. Add:
+   - **Key:** `VITE_API_URL`
+   - **Value:** `https://YOUR-API.onrender.com` (no trailing slash)
+   - Environments: Production, Preview, Development
+3. **Deployments → … on latest → Redeploy** (required so Vite rebuilds with the env var)
+4. Open `https://weather-app-beta-two-24.vercel.app/health` — should show API JSON
+5. Save a favorite — it should sync to MongoDB (Atlas → Browse Collections → `favorites`)
 
-| Name | Value |
-| --- | --- |
-| `VITE_API_URL` | `https://your-api.onrender.com` (no trailing slash) |
+### E. Atlas checklist
 
-Redeploy the frontend after adding the variable.
-
-Then open `https://your-app.vercel.app/health` — it should show fetched JSON from the API.
-
-### E. Submit FE-04
-
-- Live preview URL
-- Repo link
+- Network Access includes `0.0.0.0/0` (or Render’s IPs)
+- Database user/password in `MONGODB_URI` are correct
 
 ---
 
 ## Env var structure (no secrets in repo)
 
-| File | Purpose |
-| --- | --- |
-| `server/.env` | Local Mongo URI only (gitignored) |
-| `server/.env.example` | Template without secrets |
-| `.env.example` | Documents `VITE_API_URL` |
-| Vercel / Render dashboard | Real production secrets |
+| Where | Variable | Purpose |
+| --- | --- | --- |
+| `server/.env` (local only) | `MONGODB_URI` | Local API → Atlas |
+| Render dashboard | `MONGODB_URI` | Live API → Atlas |
+| Vercel dashboard | `VITE_API_URL` | Frontend → Render API URL |
+| `.env.example` / `server/.env.example` | placeholders only | Docs — no real secrets |
 
 Never commit real passwords or connection strings.
+
+### F. Submit FE-04
+
+- Live preview URL (Vercel)
+- Repo link

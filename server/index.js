@@ -83,15 +83,18 @@ async function start() {
   const uri = process.env.MONGODB_URI
 
   if (!uri) {
-    console.error('Missing MONGODB_URI in .env')
+    console.error('Missing MONGODB_URI in environment / server/.env')
     process.exit(1)
   }
 
   try {
     await mongoose.connect(uri)
     console.log('Connected to MongoDB')
-    app.listen(PORT, '127.0.0.1', () => {
-      console.log(`API running on http://127.0.0.1:${PORT}`)
+
+    // 0.0.0.0 is required on Render / cloud hosts
+    const host = process.env.HOST || '0.0.0.0'
+    app.listen(PORT, host, () => {
+      console.log(`API running on http://${host}:${PORT}`)
     })
   } catch (error) {
     console.error('MongoDB connection failed:', error.message)
